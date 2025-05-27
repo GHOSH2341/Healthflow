@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthFlow - Modern Healthcare Platform</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard */
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dashboard-header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .main-panel, .side-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+            transform: translateY(-2px);
+        }
+
+        /* Appointments */
+        .appointment-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .appointment-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .appointment-doctor {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .appointment-time {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .appointment-type {
+            background: #e6fffa;
+            color: #234e52;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Health Records */
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .record-item:hover {
+            background: #edf2f7;
+            transform: translateX(3px);
+        }
+
+        .record-date {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .quick-action {
+            padding: 1rem;
+            text-align: center;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .quick-action:hover {
+            transform: translateY(-3px);
+            border-color: #667eea;
+        }
+
+        .quick-action-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Health Metrics Chart */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #48bb78;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1002;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: scale(0.9) translateY(50px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    🏥 HealthFlow
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#" onclick="showPage('dashboard')" class="active">Dashboard</a></li>
+                    <li><a href="#" onclick="showPage('appointments')">Appointments</a></li>
+                    <li><a href="#" onclick="showPage('records')">Records</a></li>
+                    <li><a href="#" onclick="showPage('profile')">Profile</a></li>
+                </ul>
+                <div class="user-profile">
+                    <span>Welcome, Alex</span>
+                    <div class="profile-avatar">A</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="dashboard-header">
+                    <h1>Good morning, Alex! 👋</h1>
+                    <p>Here's your health overview for today</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24);">❤️</div>
+                        <div class="stat-value">72</div>
+                        <div class="stat-label">Heart Rate (BPM)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #4ecdc4, #44a08d);">🚶</div>
+                        <div class="stat-value">8,432</div>
+                        <div class="stat-label">Steps Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">😴</div>
+                        <div class="stat-value">7.2h</div>
+                        <div class="stat-label">Sleep Last Night</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #ffecd2, #fcb69f);">📊</div>
+                        <div class="stat-value">120/80</div>
+                        <div class="stat-label">Blood Pressure</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="main-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Health Metrics Trend</h3>
+                            <select class="form-input" style="width: auto;">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Last 3 months</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="healthChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="side-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Upcoming Appointments</h3>
+                        </div>
+                        <div class="appointment-card">
+                            <div class="appointment-header">
+                                <div>
+                                    <div class="appointment-doctor">Dr. Sarah Wilson</div>
+                                    <div class="appointment-type">Cardiology</div>
+                                </div>
+                                <div class="appointment-time">2:30 PM</div>
+                            </div>
+                            <p style="color: #718096;">Annual heart checkup</p>
+                        </div>
+                        <div class="appointment-card">
+                            <div class="appointment-header">
+                                <div>
+                                    <div class="appointment-doctor">Dr. Michael Chen</div>
+                                    <div class="appointment-type">Dental</div>
+                                </div>
+                                <div class="appointment-time">Tomorrow 10:00 AM</div>
+                            </div>
+                            <p style="color: #718096;">Regular cleaning</p>
+                        </div>
+
+                        <div class="quick-actions">
+                            <div class="quick-action" style="background: #e6fffa;" onclick="openModal('bookingModal')">
+                                <div class="quick-action-icon">📅</div>
+                                <div>Book Appointment</div>
+                            </div>
+                            <div class="quick-action" style="background: #fff5f5;" onclick="openModal('emergencyModal')">
+                                <div class="quick-action-icon">🚨</div>
+                                <div>Emergency</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments Page -->
+            <div id="appointments" class="page">
+                <div class="dashboard-header">
+                    <h1>Appointments</h1>
+                    <p>Manage your healthcare appointments</p>
+                </div>
+
+                <div class="content-grid">
+                    <div class="main-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">All Appointments</h3>
+                            <button class="btn btn-primary" onclick="openModal('bookingModal')">
+                                ➕ Book New Appointment
+                            </button>
+                        </div>
+
+                        <div class="appointment-card">
+                            <div class="appointment-header">
+                                <div>
+                                    <div class="appointment-doctor">Dr. Sarah Wilson</div>
+                                    <div class="appointment-type">Cardiology</div>
+                                </div>
+                                <div class="appointment-time">Today 2:30 PM</div>
+                            </div>
+                            <p style="color: #718096; margin-bottom: 1rem;">Annual heart checkup and consultation</p>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-secondary">Reschedule</button>
+                                <button class="btn btn-primary">Join Video Call</button>
+                            </div>
+                        </div>
+
+                        <div class="appointment-card">
+                            <div class="appointment-header">
+                                <div>
+                                    <div class="appointment-doctor">Dr. Michael Chen</div>
+                                    <div class="appointment-type">Dental</div>
+                                </div>
+                                <div class="appointment-time">Tomorrow 10:00 AM</div>
+                            </div>
+                            <p style="color: #718096; margin-bottom: 1rem;">Regular cleaning and checkup</p>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-secondary">Reschedule</button>
+                                <button class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </div>
+
+                        <div class="appointment-card">
+                            <div class="appointment-header">
+                                <div>
+                                    <div class="appointment-doctor">Dr. Emily Rodriguez</div>
+                                    <div class="appointment-type">General</div>
+                                </div>
+                                <div class="appointment-time">Next Week Mon 9:00 AM</div>
+                            </div>
+                            <p style="color: #718096; margin-bottom: 1rem;">Follow-up consultation</p>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-secondary">Reschedule</button>
+                                <button class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="side-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Quick Schedule</h3>
+                        </div>
+                        <div style="background: #f7fafc; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                            <h4 style="margin-bottom: 0.5rem;">Available Today</h4>
+                            <p style="color: #718096; font-size: 0.875rem;">Emergency slots available</p>
+                        </div>
+                        <div style="background: #e6fffa; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                            <h4 style="margin-bottom: 0.5rem;">Telemedicine</h4>
+                            <p style="color: #718096; font-size: 0.875rem;">Video consultations available</p>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%;">Find Available Slots</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Records Page -->
+            <div id="records" class="page">
+                <div class="dashboard-header">
+                    <h1>Health Records</h1>
+                    <p>Access your complete medical history</p>
+                </div>
+
+                <div class="content-grid">
+                    <div class="main-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Recent Records</h3>
+                            <button class="btn btn-primary">📤 Upload New Record</button>
+                        </div>
+
+                        <div class="record-item">
+                            <div>
+                                <h4>Blood Test Results</h4>
+                                <div class="record-date">May 25, 2025 - Dr. Sarah Wilson</div>
+                            </div>
+                            <button class="btn btn-secondary">View</button>
+                        </div>
+
+                        <div class="record-item">
+                            <div>
+                                <h4>Chest X-Ray</h4>
+                                <div class="record-date">May 20, 2025 - Dr. Michael Chen</div>
+                            </div>
+                            <button class="btn btn-secondary">View</button>
+                        </div>
+
+                        <div class="record-item">
+                            <div>
+                                <h4>Prescription - Antibiotics</h4>
+                                <div class="record-date">May 18, 2025 - Dr. Emily Rodriguez</div>
+                            </div>
+                            <button class="btn btn-secondary">View</button>
+                        </div>
+
+                        <div class="record-item">
+                            <div>
+                                <h4>Vaccination Record</h4>
+                                <div class="record-date">May 15, 2025 - Nurse Johnson</div>
+                            </div>
+                            <button class="btn btn-secondary">View</button>
+                        </div>
+                    </div>
+
+                    <div class="side-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Health Summary</h3>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="margin-bottom: 0.5rem;">Current Medications</h4>
+                            <div style="background: #fff5f5; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                                <strong>Lisinopril 10mg</strong><br>
+                                <small style="color: #718096;">Once daily</small>
+                            </div>
+                            <div style="background: #fff5f5; padding: 0.75rem; border-radius: 8px;">
+                                <strong>Vitamin D3</strong><br>
+                                <small style="color: #718096;">Daily supplement</small>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 0.5rem;">Allergies</h4>
+                            <div style="background: #fef5e7; padding: 0.75rem; border-radius: 8px;">
+                                <strong>Penicillin</strong><br>
+                                <small style="color: #718096;">Severe reaction</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile" class="page">
+                <div class="dashboard-header">
+                    <h1>Profile Settings</h1>
+                    <p>Manage your personal information and preferences</p>
+                </div>
+
+                <div class="main-panel">
+                    <form id="profileForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-input" value="Alex" id="firstName">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-input" value="Johnson" id="lastName">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" value="alex.johnson@email.com" id="email">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-input" value="+1 (555) 123-4567" id="phone">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" class="form-input" value="1990-05-15" id="dob">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Blood Type</label>
+                                <select class="form-input" id="bloodType">
+                                    <option>A+</option>
+                                    <option>A-</option>
+                                    <option>B+</option>
+                                    <option>B-</option>
+                                    <option>O+</option>
+                                    <option>O-</option>
+                                    <option>AB+</option>
+                                    <option>AB-</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Emergency Contact</label>
+                            <input type="text" class="form-input" value="Jane Johnson - (555) 987-6543" id="emergency">
+                        </div>
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button type="button" class="btn btn-secondary">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>Book Appointment</h2>
+                <button onclick="closeModal('bookingModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label class="form-label">Select Department</label>
+                    <select class="form-input" id="department">
+                        <option>General Medicine</option>
+                        <option>Cardiology</option>
+                        <option>Dentistry</option>
+                        <option>Dermatology</option>
+                        <option>Orthopedics</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Preferred Date</label>
+                    <input type="date" class="form-input" id="appointmentDate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Preferred Time</label>
+                    <select class="form-input" id="appointmentTime">
+                        <option>9:00 AM</option>
+                        <option>10:00 AM</option>
+                        <option>11:00 AM</option>
+                        <option>2:00 PM</option>
+                        <option>3:00 PM</option>
+                        <option>4:00 PM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Reason for Visit</label>
+                    <textarea class="form-input" rows="3" placeholder="Brief description of your concerns"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('bookingModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Book Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Emergency Modal -->
+    <div id="emergencyModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="color: #e53e3e;">🚨 Emergency Services</h2>
+                <button onclick="closeModal('emergencyModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <div style="background: #fed7d7; border: 2px solid #feb2b2; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                    <h3 style="color: #c53030; margin-bottom: 0.5rem;">⚠️ Life-threatening Emergency?</h3>
+                    <p style="margin-bottom: 1rem;">Call 911 immediately or go to the nearest emergency room</p>
+                    <button class="btn" style="background: #c53030; color: white; width: 100%;">📞 Call 911</button>
+                </div>
+            </div>
+            <h3 style="margin-bottom: 1rem;">Quick Emergency Options:</h3>
+            <div style="display: grid; gap: 1rem;">
+                <button class="btn btn-secondary" style="justify-content: flex-start; padding: 1rem;">
+                    🏥 Find Nearest Hospital
+                </button>
+                <button class="btn btn-secondary" style="justify-content: flex-start; padding: 1rem;">
+                    🚑 Request Ambulance
+                </button>
+                <button class="btn btn-secondary" style="justify-content: flex-start; padding: 1rem;">
+                    💊 Poison Control: 1-800-222-1222
+                </button>
+                <button class="btn btn-secondary" style="justify-content: flex-start; padding: 1rem;">
+                    🩺 Urgent Care Locator
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="color: #48bb78; font-size: 1.2rem;">✓</span>
+            <span id="notificationText">Action completed successfully!</span>
+        </div>
+    </div>
+
+    <script>
+        // Global state management
+        const appState = {
+            currentPage: 'dashboard',
+            user: {
+                name: 'Alex Johnson',
+                appointments: [],
+                healthData: {
+                    heartRate: [72, 68, 75, 71, 69, 74, 72],
+                    steps: [8432, 9123, 7654, 8876, 9234, 8123, 8432],
+                    sleep: [7.2, 8.1, 6.9, 7.8, 7.5, 8.0, 7.2]
+                }
+            }
+        };
+
+        // Page navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            appState.currentPage = pageId;
+            
+            // Initialize page-specific content
+            if (pageId === 'dashboard') {
+                initHealthChart();
+            }
+        }
+
+        // Modal management
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notificationText');
+            
+            text.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Health metrics chart
+        function initHealthChart() {
+            const ctx = document.getElementById('healthChart');
+            if (!ctx) return;
+
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [
+                        {
+                            label: 'Heart Rate (BPM)',
+                            data: appState.user.healthData.heartRate,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6
+                        },
+                        {
+                            label: 'Steps (thousands)',
+                            data: appState.user.healthData.steps.map(s => s / 1000),
+                            borderColor: '#4ecdc4',
+                            backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#4ecdc4',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    family: 'Inter',
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Inter'
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                borderDash: [3, 3],
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Inter'
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 8
+                        }
+                    }
+                }
+            });
+        }
+
+        // Form handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Profile form handler
+            const profileForm = document.getElementById('profileForm');
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    showNotification('Profile updated successfully!');
+                });
+            }
+
+            // Booking form handler
+            const bookingForm = document.getElementById('bookingForm');
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const department = document.getElementById('department').value;
+                    const date = document.getElementById('appointmentDate').value;
+                    const time = document.getElementById('appointmentTime').value;
+                    
+                    if (!date) {
+                        alert('Please select a date for your appointment.');
+                        return;
+                    }
+                    
+                    // Simulate booking process
+                    setTimeout(() => {
+                        closeModal('bookingModal');
+                        showNotification(`Appointment booked for ${department} on ${date} at ${time}`);
+                        bookingForm.reset();
+                    }, 1000);
+                });
+            }
+
+            // Initialize dashboard chart
+            initHealthChart();
+
+            // Set minimum date for appointment booking to today
+            const appointmentDateInput = document.getElementById('appointmentDate');
+            if (appointmentDateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                appointmentDateInput.min = today;
+                appointmentDateInput.value = today;
+            }
+
+            // Add click handlers for modal backgrounds
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModal(modal.id);
+                    }
+                });
+            });
+
+            // Simulate real-time health data updates
+            setInterval(updateHealthMetrics, 30000); // Update every 30 seconds
+        });
+
+        // Real-time health metrics simulation
+        function updateHealthMetrics() {
+            const heartRateElement = document.querySelector('.stat-card .stat-value');
+            if (heartRateElement) {
+                const currentRate = parseInt(heartRateElement.textContent);
+                const newRate = currentRate + Math.floor(Math.random() * 6) - 3; // ±3 BPM variation
+                heartRateElement.textContent = Math.max(60, Math.min(100, newRate));
+            }
+
+            const stepsElement = document.querySelectorAll('.stat-card .stat-value')[1];
+            if (stepsElement) {
+                const currentSteps = parseInt(stepsElement.textContent.replace(',', ''));
+                const newSteps = currentSteps + Math.floor(Math.random() * 50);
+                stepsElement.textContent = newSteps.toLocaleString();
+            }
+        }
+
+        // Health tips and reminders
+        const healthTips = [
+            "💧 Remember to drink water! Stay hydrated throughout the day.",
+            "🚶‍♂️ Take a 5-minute walk every hour to boost circulation.",
+            "😴 Maintain a consistent sleep schedule for better health.",
+            "🥗 Include more fruits and vegetables in your meals.",
+            "🧘‍♀️ Practice deep breathing for stress relief.",
+            "📱 Take regular breaks from screen time.",
+            "💊 Don't forget to take your medications as prescribed."
+        ];
+
+        // Show random health tip every few minutes
+        setInterval(() => {
+            const randomTip = healthTips[Math.floor(Math.random() * healthTips.length)];
+            showNotification(randomTip);
+        }, 300000); // Every 5 minutes
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.altKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        showPage('dashboard');
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        showPage('appointments');
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        showPage('records');
+                        break;
+                    case '4':
+                        e.preventDefault();
+                        showPage('profile');
+                        break;
+                }
+            }
+            
+            // Close modals with Escape key
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+
+        // Voice commands (if supported)
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const command = event.results[0][0].transcript.toLowerCase();
+                
+                if (command.includes('dashboard')) {
+                    showPage('dashboard');
+                    showNotification('Navigated to Dashboard');
+                } else if (command.includes('appointments')) {
+                    showPage('appointments');
+                    showNotification('Navigated to Appointments');
+                } else if (command.includes('records')) {
+                    showPage('records');
+                    showNotification('Navigated to Records');
+                } else if (command.includes('profile')) {
+                    showPage('profile');
+                    showNotification('Navigated to Profile');
+                } else if (command.includes('book appointment')) {
+                    openModal('bookingModal');
+                    showNotification('Opening appointment booking');
+                }
+            };
+
+            // Add voice control button (optional)
+            const voiceButton = document.createElement('button');
+            voiceButton.innerHTML = '🎤';
+            voiceButton.className = 'btn btn-secondary';
+            voiceButton.style.position = 'fixed';
+            voiceButton.style.bottom = '20px';
+            voiceButton.style.right = '20px';
+            voiceButton.style.borderRadius = '50%';
+            voiceButton.style.width = '60px';
+            voiceButton.style.height = '60px';
+            voiceButton.style.zIndex = '1000';
+            voiceButton.title = 'Voice Commands';
+            
+            voiceButton.onclick = function() {
+                recognition.start();
+                showNotification('Listening for voice command...');
+            };
+            
+            document.body.appendChild(voiceButton);
+        }
+
+        // Progressive Web App features
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                }, function(err) {
+                    console.log('ServiceWorker registration failed');
+                });
+            });
+        }
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            showNotification(`${isDark ? 'Dark' : 'Light'} mode activated`);
+        }
+
+        // Add dark mode styles
+        const darkModeStyles = `
+            .dark-mode {
+                background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            }
+            .dark-mode .navbar {
+                background: rgba(0, 0, 0, 0.3);
+            }
+            .dark-mode .dashboard-header {
+                background: rgba(0, 0, 0, 0.2);
+            }
+            .dark-mode .stat-card,
+            .dark-mode .main-panel,
+            .dark-mode .side-panel {
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+            }
+            .dark-mode .form-input {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: rgba(255, 255, 255, 0.2);
+                color: white;
+            }
+            .dark-mode .appointment-card {
+                background: rgba(255, 255, 255, 0.05);
+                color: white;
+            }
+        `;
+
+        const darkModeStyleSheet = document.createElement('style');
+        darkModeStyleSheet.textContent = darkModeStyles;
+        document.head.appendChild(darkModeStyleSheet);
+
+        // Health data export functionality
+        function exportHealthData() {
+            const data = {
+                user: appState.user.name,
+                exportDate: new Date().toISOString(),
+                healthMetrics: appState.user.healthData,
+                profile: {
+                    firstName: document.getElementById('firstName')?.value,
+                    lastName: document.getElementById('lastName')?.value,
+                    email: document.getElementById('email')?.value,
+                    phone: document.getElementById('phone')?.value,
+                    bloodType: document.getElementById('bloodType')?.value
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `health-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Health data exported successfully!');
+        }
+
+        // Initialize app
+        console.log('HealthFlow app initialized successfully! 🏥');
+    </script>
+</body>
+</html>
